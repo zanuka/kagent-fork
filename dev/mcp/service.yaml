@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-dev
+  namespace: kagent
+  labels:
+    app: mcp-dev
+spec:
+  selector:
+    app: mcp-dev
+  ports:
+    - port: 8083
+      targetPort: 8083
+      protocol: TCP
+      name: http

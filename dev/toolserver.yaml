@@ -1,0 +1,19 @@
+apiVersion: kagent.dev/v1alpha1
+kind: ToolServer
+metadata:
+  name: mcp-dev
+  namespace: kagent
+spec:
+  provider: mcp
+  url: http://mcp-dev:8084
+  tools:
+    - name: prometheus
+      enabled: true
+    - name: argo
+      enabled: true
+    - name: istio
+      enabled: true
+    - name: k8s
+      enabled: true
+    - name: helm
+      enabled: true

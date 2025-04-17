@@ -6,10 +6,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/kagent-dev/kagent/go/autogen/api"
 	"github.com/kagent-dev/kagent/go/controller/api/v1alpha1"
 	"github.com/kagent-dev/kagent/go/controller/internal/httpserver/errors"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ToolsHandler handles tool-related requests
@@ -113,4 +116,56 @@ func convertMapToMCPToolConfig(data map[string]v1alpha1.AnyType) (api.MCPToolCon
 	config.Tool = tool
 
 	return config, nil
+}
+
+// HandleTestTool handles POST /api/tools/{provider}/{tool}/test requests
+func (h *ToolsHandler) HandleTestTool(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	provider := vars["provider"]
+	tool := vars["tool"]
+
+	log := ctrllog.FromContext(r.Context())
+	log.Info("testing tool", "provider", provider, "tool", tool)
+
+	var toolServerName string
+	if provider == "mcp" {
+		toolServerName = "mcp-tool-server"
+	} else {
+		toolServerName = fmt.Sprintf("%s-tool-server", provider)
+	}
+
+	var toolServer v1alpha1.ToolServer
+	if err := h.KubeClient.Get(r.Context(), types.NamespacedName{
+		Name:      toolServerName,
+		Namespace: "kagent",
+	}, &toolServer); err != nil {
+		if client.IgnoreNotFound(err) != nil {
+			log.Error(err, "failed to get tool server")
+			errors.WriteInternalError(w, err)
+			return
+		}
+		log.Info("tool server not found", "name", toolServerName)
+		errors.WriteNotFoundError(w, fmt.Sprintf("tool server %s not found", toolServerName))
+		return
+	}
+
+	toolFound := false
+	for _, discoveredTool := range toolServer.Status.DiscoveredTools {
+		if discoveredTool.Name == tool {
+			toolFound = true
+			break
+		}
+	}
+
+	if !toolFound {
+		log.Info("tool not found in tool server", "tool", tool, "server", toolServerName)
+		errors.WriteNotFoundError(w, fmt.Sprintf("tool %s not found in tool server %s", tool, toolServerName))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": fmt.Sprintf("tool %s found in tool server %s", tool, toolServerName),
+	})
 }

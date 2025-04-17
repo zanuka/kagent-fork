@@ -1,8 +1,8 @@
 "use server";
 
 import { BaseResponse } from "@/lib/types";
-import { fetchApi, createErrorResponse } from "./utils";
-import { Component, ToolConfig, MCPToolConfig } from "@/types/datamodel";
+import { Component, MCPToolConfig, ToolConfig } from "@/types/datamodel";
+import { createErrorResponse, fetchApi } from "./utils";
 
 /**
  * Gets all available tools
@@ -48,15 +48,15 @@ export async function getToolByProvider(provider: string, toolName?: string): Pr
 
     // For MCP tools, we need to match both provider and tool name
     if (provider === "autogen_ext.tools.mcp.SseMcpToolAdapter" && toolName) {
-      const tool = response.data.find(t => 
-        t.provider === provider && 
+      const tool = response.data.find(t =>
+        t.provider === provider &&
         (t.config as MCPToolConfig)?.tool?.name === toolName
       );
-      
+
       if (tool) {
         // For MCP tools, use the description from the tool object
-        return { 
-          success: true, 
+        return {
+          success: true,
           data: {
             ...tool,
             description: (tool.config as MCPToolConfig)?.tool?.description || "No description available"
@@ -74,5 +74,23 @@ export async function getToolByProvider(provider: string, toolName?: string): Pr
     throw new Error(`Tool with provider ${provider}${toolName ? ` and name ${toolName}` : ''} not found`);
   } catch (error) {
     return createErrorResponse<Component<ToolConfig>>(error, "Error getting tool");
+  }
+}
+
+export async function testTool(
+  provider: string,
+  tool: string,
+  is_async = true
+): Promise<BaseResponse<{ success: boolean }>> {
+  try {
+    const response = await fetchApi<{ success: boolean }>(
+      `/tools/${provider}/${tool}/test?is_async=${is_async}`,
+      {
+        method: 'POST',
+      }
+    );
+    return { success: true, data: response };
+  } catch (error) {
+    return createErrorResponse<{ success: boolean }>(error, "Error testing tool");
   }
 }

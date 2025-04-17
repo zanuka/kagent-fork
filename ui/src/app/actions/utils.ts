@@ -22,7 +22,9 @@ export async function fetchApi<T>(path: string, options: ApiOptions = {}): Promi
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   const url = `${getBackendUrl()}${cleanPath}`;
   const urlWithUser = url.includes("?") ? `${url}&user_id=${userId}` : `${url}?user_id=${userId}`;
-  
+
+  console.log(`Making API request to: ${urlWithUser}`);
+
   try {
     const response = await fetch(urlWithUser, {
       ...options,
@@ -34,25 +36,34 @@ export async function fetchApi<T>(path: string, options: ApiOptions = {}): Promi
       signal: AbortSignal.timeout(15000), // 15 second timeout
     });
 
+    console.log(`Response status: ${response.status}`);
+    console.log(`Response headers:`, Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
       // Try to extract error message from response
       let errorMessage = `Request failed with status ${response.status}. ${url}`;
-      
+
       try {
         const contentType = response.headers.get("content-type");
+        console.log(`Error response content-type: ${contentType}`);
+
         if (contentType && contentType.includes("application/json")) {
           const errorData = await response.json();
+          console.log("Error response data:", errorData);
           if (errorData.error) {
             errorMessage = errorData.error;
           } else if (errorData.message) {
             errorMessage = errorData.message;
           }
+        } else {
+          const text = await response.text();
+          console.log("Error response text:", text);
+          errorMessage = `${errorMessage} - ${text}`;
         }
       } catch (parseError) {
-        // If we can't parse the error response, use the default error message
-        console.warn("Could not parse error response:", parseError);
+        console.error("Could not parse error response:", parseError);
       }
-      
+
       throw new Error(errorMessage);
     }
 
@@ -62,25 +73,31 @@ export async function fetchApi<T>(path: string, options: ApiOptions = {}): Promi
     }
 
     const contentType = response.headers.get("content-type");
+    console.log(`Success response content-type: ${contentType}`);
+
     if (!contentType || !contentType.includes("application/json")) {
-      throw new Error("Response was not JSON");
+      const text = await response.text();
+      console.log("Non-JSON response:", text);
+      throw new Error(`Response was not JSON: ${text}`);
     }
 
     const jsonResponse = await response.json();
+    console.log("Success response data:", jsonResponse);
     return jsonResponse?.data || jsonResponse;
   } catch (error) {
+    console.error("Error in fetchApi:", {
+      path,
+      url: urlWithUser,
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       throw new Error(`Network error - Could not reach backend server. ${url}`);
     }
     if (error instanceof DOMException && error.name === "AbortError") {
       throw new Error(`Request timed out - server took too long to respond. ${url}`);
     }
-
-    console.error("Error in fetchApi:", {
-      path,
-      url: `${path}`,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
 
     // Include more error details for debugging
     throw new Error(`Failed to fetch (${url}): ${error instanceof Error ? error.message : "Unknown error"}`);

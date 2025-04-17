@@ -1,6 +1,6 @@
 "use server";
-import { fetchApi, createErrorResponse } from "./utils";
 import { BaseResponse, Model } from "@/lib/types";
+import { createErrorResponse, fetchApi } from "./utils";
 
 /**
  * Gets all available models
@@ -8,10 +8,18 @@ import { BaseResponse, Model } from "@/lib/types";
  */
 export async function getModels(): Promise<BaseResponse<Model[]>> {
   try {
+    console.log("Fetching models from /modelconfigs...");
     const response = await fetchApi<Model[]>("/modelconfigs");
+    console.log("Models response:", response);
 
     if (!response) {
-      throw new Error("Failed to get models");
+      console.error("No response received from /modelconfigs");
+      throw new Error("Failed to get models: No response received");
+    }
+
+    if (!Array.isArray(response)) {
+      console.error("Response is not an array:", response);
+      throw new Error("Failed to get models: Invalid response format");
     }
 
     return {
@@ -19,6 +27,7 @@ export async function getModels(): Promise<BaseResponse<Model[]>> {
       data: response,
     };
   } catch (error) {
+    console.error("Error in getModels:", error);
     return createErrorResponse<Model[]>(error, "Error getting models");
   }
 }
@@ -30,9 +39,12 @@ export async function getModels(): Promise<BaseResponse<Model[]>> {
  */
 export async function getModel(configName: string): Promise<BaseResponse<Model>> {
   try {
+    console.log(`Fetching model ${configName} from /modelconfigs/${configName}...`);
     const response = await fetchApi<Model>(`/modelconfigs/${configName}`);
+    console.log("Model response:", response);
 
     if (!response) {
+      console.error(`No response received for model ${configName}`);
       throw new Error("Failed to get model");
     }
 
@@ -41,6 +53,7 @@ export async function getModel(configName: string): Promise<BaseResponse<Model>>
       data: response,
     };
   } catch (error) {
+    console.error(`Error in getModel for ${configName}:`, error);
     return createErrorResponse<Model>(error, "Error getting model");
   }
 }

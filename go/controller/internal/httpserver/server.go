@@ -126,6 +126,7 @@ func (s *HTTPServer) setupRoutes() {
 
 	// Tools
 	s.router.HandleFunc(APIPathTools, adaptHandler(s.handlers.Tools.HandleListTools)).Methods(http.MethodGet)
+	s.router.HandleFunc(APIPathTools+"/{provider}/{tool}/test", adaptHandler(s.handlers.Tools.HandleTestTool)).Methods(http.MethodPost)
 
 	// Tool Servers
 	s.router.HandleFunc(APIPathToolServers, adaptHandler(s.handlers.ToolServers.HandleListToolServers)).Methods(http.MethodGet)

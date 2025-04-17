@@ -91,10 +91,11 @@ from kagent.tools.prometheus._prometheus import (
     TSDBStatusInput,
     TSDBStatusTool,
 )
+from kagent.tools.hello import hello_tool
 
 app = typer.Typer()
 
-mcp = FastMCP("My App")
+mcp = FastMCP("Hello App")
 
 
 def add_typed_tool(cfg_type: type[BaseModel], tool: BaseTool):
@@ -199,21 +200,21 @@ def prometheus(
 
 @app.command()
 def argo():
-    mcp.add_tool(verify_gateway_plugin._func, verify_gateway_plugin.name, verify_gateway_plugin.description)
-    mcp.add_tool(check_plugin_logs._func, check_plugin_logs.name, check_plugin_logs.description)
+    mcp.add_tool(verify_gateway_plugin.run, verify_gateway_plugin.name, verify_gateway_plugin.description)
+    mcp.add_tool(check_plugin_logs.run, check_plugin_logs.name, check_plugin_logs.description)
     mcp.add_tool(
-        verify_kubectl_plugin_install._func,
+        verify_kubectl_plugin_install.run,
         verify_kubectl_plugin_install.name,
         verify_kubectl_plugin_install.description,
     )
     mcp.add_tool(
-        verify_argo_rollouts_controller_install._func,
+        verify_argo_rollouts_controller_install.run,
         verify_argo_rollouts_controller_install.name,
         verify_argo_rollouts_controller_install.description,
     )
-    mcp.add_tool(pause_rollout._func, pause_rollout.name, pause_rollout.description)
-    mcp.add_tool(promote_rollout._func, promote_rollout.name, promote_rollout.description)
-    mcp.add_tool(set_rollout_image._func, set_rollout_image.name, set_rollout_image.description)
+    mcp.add_tool(pause_rollout.run, pause_rollout.name, pause_rollout.description)
+    mcp.add_tool(promote_rollout.run, promote_rollout.name, promote_rollout.description)
+    mcp.add_tool(set_rollout_image.run, set_rollout_image.name, set_rollout_image.description)
 
     mcp.run()
 
@@ -221,61 +222,62 @@ def argo():
 @app.command()
 def istio():
     mcp.add_tool(
-        analyze_cluster_configuration._func,
+        analyze_cluster_configuration.run,
         analyze_cluster_configuration.name,
         analyze_cluster_configuration.description,
     )
-    mcp.add_tool(apply_waypoint._func, apply_waypoint.name, apply_waypoint.description)
-    mcp.add_tool(delete_waypoint._func, delete_waypoint.name, delete_waypoint.description)
-    mcp.add_tool(list_waypoints._func, list_waypoints.name, list_waypoints.description)
-    mcp.add_tool(generate_manifest._func, generate_manifest.name, generate_manifest.description)
-    mcp.add_tool(generate_waypoint._func, generate_waypoint.name, generate_waypoint.description)
-    mcp.add_tool(install_istio._func, install_istio.name, install_istio.description)
-    mcp.add_tool(proxy_config._func, proxy_config.name, proxy_config.description)
-    mcp.add_tool(proxy_status._func, proxy_status.name, proxy_status.description)
-    mcp.add_tool(remote_clusters._func, remote_clusters.name, remote_clusters.description)
-    mcp.add_tool(ztunnel_config._func, ztunnel_config.name, ztunnel_config.description)
-    mcp.add_tool(proxy_status._func, proxy_status.name, proxy_status.description)
-    mcp.add_tool(remote_clusters._func, remote_clusters.name, remote_clusters.description)
+    mcp.add_tool(apply_waypoint.run, apply_waypoint.name, apply_waypoint.description)
+    mcp.add_tool(delete_waypoint.run, delete_waypoint.name, delete_waypoint.description)
+    mcp.add_tool(list_waypoints.run, list_waypoints.name, list_waypoints.description)
+    mcp.add_tool(generate_manifest.run, generate_manifest.name, generate_manifest.description)
+    mcp.add_tool(generate_waypoint.run, generate_waypoint.name, generate_waypoint.description)
+    mcp.add_tool(install_istio.run, install_istio.name, install_istio.description)
+    mcp.add_tool(proxy_config.run, proxy_config.name, proxy_config.description)
+    mcp.add_tool(proxy_status.run, proxy_status.name, proxy_status.description)
+    mcp.add_tool(remote_clusters.run, remote_clusters.name, remote_clusters.description)
+    mcp.add_tool(ztunnel_config.run, ztunnel_config.name, ztunnel_config.description)
+    mcp.add_tool(proxy_status.run, proxy_status.name, proxy_status.description)
+    mcp.add_tool(remote_clusters.run, remote_clusters.name, remote_clusters.description)
 
     mcp.run()
 
 
 @app.command()
 def k8s():
-    mcp.add_tool(apply_manifest._func, apply_manifest.name, apply_manifest.description)
-    mcp.add_tool(get_pod_logs._func, get_pod_logs.name, get_pod_logs.description)
-    mcp.add_tool(get_resources._func, get_resources.name, get_resources.description)
-    mcp.add_tool(get_resource_yaml._func, get_resource_yaml.name, get_resource_yaml.description)
-    mcp.add_tool(get_cluster_configuration._func, get_cluster_configuration.name, get_cluster_configuration.description)
-    mcp.add_tool(describe_resource._func, describe_resource.name, describe_resource.description)
-    mcp.add_tool(delete_resource._func, delete_resource.name, delete_resource.description)
-    mcp.add_tool(label_resource._func, label_resource.name, label_resource.description)
-    mcp.add_tool(annotate_resource._func, annotate_resource.name, annotate_resource.description)
-    mcp.add_tool(remove_label._func, remove_label.name, remove_label.description)
-    mcp.add_tool(remove_annotation._func, remove_annotation.name, remove_annotation.description)
-    mcp.add_tool(rollout._func, rollout.name, rollout.description)
-    mcp.add_tool(scale._func, scale.name, scale.description)
-    mcp.add_tool(patch_resource._func, patch_resource.name, patch_resource.description)
-    mcp.add_tool(
-        check_service_connectivity._func, check_service_connectivity.name, check_service_connectivity.description
-    )
-    mcp.add_tool(create_resource._func, create_resource.name, create_resource.description)
-    mcp.add_tool(get_events._func, get_events.name, get_events.description)
-    mcp.add_tool(
-        get_available_api_resources._func, get_available_api_resources.name, get_available_api_resources.description
-    )
+    def wrap_tool(tool):
+        def wrapped(args):
+            return tool.run(args, CancellationToken())
+        return wrapped
+
+    mcp.add_tool(wrap_tool(apply_manifest), apply_manifest.name, apply_manifest.description)
+    mcp.add_tool(wrap_tool(get_pod_logs), get_pod_logs.name, get_pod_logs.description)
+    mcp.add_tool(wrap_tool(get_resources), get_resources.name, get_resources.description)
+    mcp.add_tool(wrap_tool(get_resource_yaml), get_resource_yaml.name, get_resource_yaml.description)
+    mcp.add_tool(wrap_tool(get_cluster_configuration), get_cluster_configuration.name, get_cluster_configuration.description)
+    mcp.add_tool(wrap_tool(describe_resource), describe_resource.name, describe_resource.description)
+    mcp.add_tool(wrap_tool(delete_resource), delete_resource.name, delete_resource.description)
+    mcp.add_tool(wrap_tool(label_resource), label_resource.name, label_resource.description)
+    mcp.add_tool(wrap_tool(annotate_resource), annotate_resource.name, annotate_resource.description)
+    mcp.add_tool(wrap_tool(remove_label), remove_label.name, remove_label.description)
+    mcp.add_tool(wrap_tool(remove_annotation), remove_annotation.name, remove_annotation.description)
+    mcp.add_tool(wrap_tool(rollout), rollout.name, rollout.description)
+    mcp.add_tool(wrap_tool(scale), scale.name, scale.description)
+    mcp.add_tool(wrap_tool(patch_resource), patch_resource.name, patch_resource.description)
+    mcp.add_tool(wrap_tool(check_service_connectivity), check_service_connectivity.name, check_service_connectivity.description)
+    mcp.add_tool(wrap_tool(create_resource), create_resource.name, create_resource.description)
+    mcp.add_tool(wrap_tool(get_events), get_events.name, get_events.description)
+    mcp.add_tool(wrap_tool(get_available_api_resources), get_available_api_resources.name, get_available_api_resources.description)
     mcp.run()
 
 
 @app.command()
 def helm():
-    mcp.add_tool(helm_list_releases._func, helm_list_releases.name, helm_list_releases.description)
-    mcp.add_tool(helm_get_release._func, helm_get_release.name, helm_get_release.description)
-    mcp.add_tool(helm_uninstall._func, helm_uninstall.name, helm_uninstall.description)
-    mcp.add_tool(upgrade_release._func, upgrade_release.name, upgrade_release.description)
-    mcp.add_tool(helm_repo_add._func, helm_repo_add.name, helm_repo_add.description)
-    mcp.add_tool(helm_repo_update._func, helm_repo_update.name, helm_repo_update.description)
+    mcp.add_tool(helm_list_releases.run, helm_list_releases.name, helm_list_releases.description)
+    mcp.add_tool(helm_get_release.run, helm_get_release.name, helm_get_release.description)
+    mcp.add_tool(helm_uninstall.run, helm_uninstall.name, helm_uninstall.description)
+    mcp.add_tool(upgrade_release.run, upgrade_release.name, upgrade_release.description)
+    mcp.add_tool(helm_repo_add.run, helm_repo_add.name, helm_repo_add.description)
+    mcp.add_tool(helm_repo_update.run, helm_repo_update.name, helm_repo_update.description)
     mcp.run()
 
 
@@ -308,6 +310,16 @@ def serve(
         OpenAIInstrumentor().instrument()
 
     ui(host=host, port=port)
+
+
+@app.command()
+def hello():
+    mcp.add_tool(
+        hello_tool.run,
+        hello_tool.name,
+        hello_tool.description,
+    )
+    mcp.run()
 
 
 def run():

@@ -1,0 +1,12 @@
+apiVersion: kagent.dev/v1alpha1
+kind: ToolServer
+metadata:
+  name: mcp-tool-server
+  namespace: kagent
+spec:
+  description: 'Local MCP Tool Server'
+  config:
+    sse:
+      url: 'http://localhost:8083/api/mcp/sse'
+      timeout: '30s'
+      sse_read_timeout: '30s'

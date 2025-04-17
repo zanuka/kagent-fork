@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-dev
+  namespace: kagent
+  labels:
+    app: mcp-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-dev
+  template:
+    metadata:
+      labels:
+        app: mcp-dev
+    spec:
+      containers:
+        - name: mcp
+          image: mcp:latest
+          imagePullPolicy: Never
+          command: ['python']
+          args: ['-m', 'kagent.cli', 'k8s']
+          env:
+            - name: PORT
+              value: '8084'
+            - name: PYTHONPATH
+              value: '/opt/venv/lib/python3.11/site-packages:/app/python'
+            - name: VIRTUAL_ENV
+              value: '/opt/venv'
+          ports:
+            - containerPort: 8084
+          resources:
+            requests:
+              cpu: '100m'
+              memory: '128Mi'
+            limits:
+              cpu: '200m'
+              memory: '256Mi'

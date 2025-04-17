@@ -1,21 +1,42 @@
-"use client";
-import { useTheme } from "next-themes";
+'use client';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
-export default function KAgentLogoWithText({ className } : { className?: string }) {
+export default function KAgentLogoWithText({
+  className,
+}: {
+  className?: string;
+}) {
   const { resolvedTheme } = useTheme();
+  const [fill, setFill] = useState<string | undefined>(undefined); // Default to undefined or a neutral color
 
-  let fill;
-  if (resolvedTheme === "dark") {
-    fill = "white";
-  } else {
-    fill = "#151927";
+  useEffect(() => {
+    // Only set the fill color after mounting
+    if (resolvedTheme === 'dark') {
+      setFill('white');
+    } else {
+      setFill('#151927');
+    }
+  }, [resolvedTheme]); // Re-run if the theme changes
+
+  // Optionally: Render nothing or a placeholder until theme is resolved
+  if (fill === undefined) {
+    return null; // Or return a placeholder SVG
   }
 
   return (
-    <svg viewBox="0 0 494 110" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg
+      viewBox="0 0 494 110"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
       <g clipPath="url(#clip0_16068_64093)">
         <path d="M91.609 46.098H76.3328V61.472H91.609V46.098Z" fill="#942DE7" />
-        <path d="M61.0806 46.098H45.8045V61.472H61.0806V46.098Z" fill="#942DE7" />
+        <path
+          d="M61.0806 46.098H45.8045V61.472H61.0806V46.098Z"
+          fill="#942DE7"
+        />
         <path
           d="M106.861 15.374L91.5851 0H76.3329H61.0567H45.8045H30.5284V15.374H15.2761V30.724H0V46.098V61.4479L15.2761 76.822L30.5284 92.1719H45.8045H61.0567H76.3329H91.5851H106.861V76.822H91.5851H76.3329H61.0567H45.8045H30.5284V61.4479V46.098V30.724H45.8045H61.0567H76.3329H91.5851H106.861V46.098V61.4479V76.822H122.113V61.4479V46.098V30.724L106.861 15.374Z"
           fill="#942DE7"

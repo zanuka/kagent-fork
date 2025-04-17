@@ -1,10 +1,10 @@
-'use client'
-import { useState } from "react";
-import Link from "next/link";
-import { Button } from "./ui/button";
-import KAgentLogoWithText from "./kagent-logo-text";
-import { Plus, Menu, X } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
+'use client';
+import { Menu, Plus, X } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import KAgentLogoWithText from './kagent-logo-text';
+import { ThemeToggle } from './ThemeToggle';
+import { Button } from './ui/button';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,29 +20,53 @@ export function Header() {
           <Link href="/">
             <KAgentLogoWithText className="h-5" />
           </Link>
-          
+
           {/* Mobile menu button */}
-          <button 
+          <button
             className="md:hidden p-2 focus:outline-none"
             onClick={toggleMenu}
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
-          
+
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-            <Button variant="link" className="text-secondary-foreground" asChild>
+            <Button
+              variant="link"
+              className="text-secondary-foreground"
+              asChild
+            >
               <Link href="/agents">My Agents</Link>
             </Button>
-            <Button variant="link" className="text-secondary-foreground" asChild>
+            <Button
+              variant="link"
+              className="text-secondary-foreground"
+              asChild
+            >
               <Link href="/tools">Tools</Link>
             </Button>
-            <Button variant="link" className="text-secondary-foreground" asChild>
-              <Link href="https://github.com/kagent-dev/kagent" target="_blank">Contribute</Link>
+            <Button
+              variant="link"
+              className="text-secondary-foreground"
+              asChild
+            >
+              <Link href="https://github.com/kagent-dev/kagent" target="_blank">
+                Contribute
+              </Link>
             </Button>
-            <Button variant="link" className="text-secondary-foreground" asChild>
-              <Link href="https://discord.gg/Fu3k65f2k3">Join the community</Link>
+            <Button
+              variant="link"
+              className="text-secondary-foreground"
+              asChild
+            >
+              <Link href="https://discord.gg/Fu3k65f2k3">
+                Join the community
+              </Link>
             </Button>
             <div>
               <ThemeToggle />
@@ -55,22 +79,45 @@ export function Header() {
             </Button>
           </div>
         </div>
-        
+
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden pt-4 pb-2 animate-in fade-in slide-in-from-top duration-300">
             <div className="flex flex-col space-y-3">
-              <Button variant="link" className="text-secondary-foreground justify-start px-1" asChild>
+              <Button
+                variant="link"
+                className="text-secondary-foreground justify-start px-1"
+                asChild
+              >
                 <Link href="/agents">My Agents</Link>
               </Button>
-              <Button variant="link" className="text-secondary-foreground justify-start px-1" asChild>
+              <Button
+                variant="link"
+                className="text-secondary-foreground justify-start px-1"
+                asChild
+              >
                 <Link href="/tools">Tools</Link>
               </Button>
-              <Button variant="link" className="text-secondary-foreground justify-start px-1" asChild>
-                <Link href="https://github.com/kagent-dev/kagent" target="_blank">Contribute</Link>
+              <Button
+                variant="link"
+                className="text-secondary-foreground justify-start px-1"
+                asChild
+              >
+                <Link
+                  href="https://github.com/kagent-dev/kagent"
+                  target="_blank"
+                >
+                  Contribute
+                </Link>
               </Button>
-              <Button variant="link" className="text-secondary-foreground justify-start px-1" asChild>
-                <Link href="https://discord.gg/Fu3k65f2k3">Join the community</Link>
+              <Button
+                variant="link"
+                className="text-secondary-foreground justify-start px-1"
+                asChild
+              >
+                <Link href="https://discord.gg/Fu3k65f2k3">
+                  Join the community
+                </Link>
               </Button>
               <div className="flex items-center justify-between py-2">
                 <Button variant="default" size="sm" asChild>

@@ -192,3 +192,6 @@ go/bin/
 
 ## Helm
 *.tgz
+
+## Tool versions ( asdf )
+ui/.tool-versions

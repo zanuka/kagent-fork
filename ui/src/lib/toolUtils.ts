@@ -1,4 +1,4 @@
-import { AgentTool, Component, MCPToolConfig, ToolConfig, McpServerTool, InlineTool } from "@/types/datamodel";
+import { AgentTool, Component, InlineTool, McpServerTool, MCPToolConfig, ToolConfig } from "@/types/datamodel";
 
 export const isMcpTool = (tool: unknown): tool is { type: "McpServer"; mcpServer: McpServerTool } => {
   if (!tool || typeof tool !== "object") return false;
@@ -81,7 +81,7 @@ export const getToolIdentifier = (tool?: AgentTool | Component<ToolConfig>): str
       const mcpConfig = tool.config as MCPToolConfig;
       return `mcptool-${mcpConfig.tool.name}`;
     }
-    
+
     // For regular component tools
     return `component-${tool.provider}`;
   }
@@ -105,7 +105,7 @@ export const getToolProvider = (tool?: AgentTool | Component<ToolConfig>): strin
   if (typeof tool === "object" && "provider" in tool) {
     return tool.provider;
   }
-  
+
   // Handle AgentTool types
   if (isInlineTool(tool) && tool.inline) {
     return tool.inline.provider;
@@ -149,8 +149,8 @@ export const findComponentForAgentTool = (agentTool: AgentTool, components: Comp
   if (isMcpTool(agentTool)) {
     // isMcpTool type guard ensures mcpServer exists and has required properties
     return components.find(
-      (c) => 
-        c.provider === "autogen_ext.tools.mcp.SseMcpToolAdapter" && 
+      (c) =>
+        c.provider === "autogen_ext.tools.mcp.SseMcpToolAdapter" &&
         ((c.config as MCPToolConfig).tool.name === agentTool.mcpServer.toolNames[0] || c.label === agentTool.mcpServer.toolServer)
     );
   } else if (isInlineTool(agentTool)) {
@@ -158,4 +158,11 @@ export const findComponentForAgentTool = (agentTool: AgentTool, components: Comp
     return components.find((c) => c.provider === agentTool.inline.provider);
   }
   return undefined;
+};
+
+export const isComponentMcpTool = (component?: Component<ToolConfig>): boolean => {
+  if (!component) return false;
+
+  // Check if it's an MCP adapter tool
+  return component.provider === "autogen_ext.tools.mcp.SseMcpToolAdapter";
 };
